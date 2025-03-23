@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'triton'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['triton:8002']
+  - job_name: 'preprocessing'
+    metrics_path: '/inf/metrics'
+    static_configs:
+      - targets: ['http-server:8080']

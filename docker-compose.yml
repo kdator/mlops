@@ -1,0 +1,44 @@
+services:
+  triton:
+    image: nvcr.io/nvidia/tritonserver:23.10-py3
+    container_name: triton
+    restart: always
+    volumes:
+      - ./triton/models:/models
+    command: ["tritonserver", "--model-repository=/models"]
+    ports:
+      - 8000:8000
+      - 8002:8002
+
+  http-server:
+    build: server/
+    container_name: http-server
+    ports:
+      - 8080:8080
+    command: uvicorn server:app --host 0.0.0.0 --port 8080
+    depends_on:
+      - triton
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+
+volumes:
+  grafana_data:
